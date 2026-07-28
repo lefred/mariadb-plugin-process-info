@@ -1,0 +1,25 @@
+SELECT PLUGIN_STATUS, PLUGIN_TYPE
+  FROM information_schema.PLUGINS
+  WHERE PLUGIN_NAME='PROCESS_INFO';
+
+SELECT COUNT(*) = 17
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA='information_schema' AND TABLE_NAME='PROCESS_INFO';
+
+SELECT COUNT(*) > 0 AS has_rows,
+       MIN(ID) > 0 AS valid_ids,
+       MIN(LENGTH(THREAD_NAME)) > 0 AS named_threads,
+       MIN(LENGTH(STATE)) = 1 AS valid_states,
+       MIN(VSIZE_BYTES) > 0 AS valid_vsize,
+       MIN(RSS_BYTES) > 0 AS valid_rss,
+       MIN(READ_BYTES) >= 0 AS valid_reads,
+       MIN(WRITE_BYTES) >= 0 AS valid_writes
+  FROM information_schema.PROCESS_INFO;
+
+CREATE USER process_info_user@localhost;
+connect (unprivileged,localhost,process_info_user,,);
+--error ER_SPECIFIC_ACCESS_DENIED_ERROR
+SELECT COUNT(*) FROM information_schema.PROCESS_INFO;
+disconnect unprivileged;
+connection default;
+DROP USER process_info_user@localhost;

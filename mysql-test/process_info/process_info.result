@@ -1,0 +1,28 @@
+SELECT PLUGIN_STATUS, PLUGIN_TYPE
+FROM information_schema.PLUGINS
+WHERE PLUGIN_NAME='PROCESS_INFO';
+PLUGIN_STATUS	PLUGIN_TYPE
+ACTIVE	INFORMATION SCHEMA
+SELECT COUNT(*) = 17
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA='information_schema' AND TABLE_NAME='PROCESS_INFO';
+COUNT(*) = 17
+1
+SELECT COUNT(*) > 0 AS has_rows,
+MIN(ID) > 0 AS valid_ids,
+MIN(LENGTH(THREAD_NAME)) > 0 AS named_threads,
+MIN(LENGTH(STATE)) = 1 AS valid_states,
+MIN(VSIZE_BYTES) > 0 AS valid_vsize,
+MIN(RSS_BYTES) > 0 AS valid_rss,
+MIN(READ_BYTES) >= 0 AS valid_reads,
+MIN(WRITE_BYTES) >= 0 AS valid_writes
+FROM information_schema.PROCESS_INFO;
+has_rows	valid_ids	named_threads	valid_states	valid_vsize	valid_rss	valid_reads	valid_writes
+1	1	1	1	1	1	1	1
+CREATE USER process_info_user@localhost;
+connect  unprivileged,localhost,process_info_user,,;
+SELECT COUNT(*) FROM information_schema.PROCESS_INFO;
+ERROR 42000: Access denied; you need (at least one of) the PROCESS privilege(s) for this operation
+disconnect unprivileged;
+connection default;
+DROP USER process_info_user@localhost;
